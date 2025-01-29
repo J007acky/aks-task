@@ -1,0 +1,4 @@
+subscriptionId: ""
+environment: "dev"
+hubVnetResourceRegion: "eastus"
+spokeVnetResourceRegion: "westus"

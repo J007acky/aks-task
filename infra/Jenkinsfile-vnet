@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('git checkout') {
+            steps{
+                script {
+                    git branch: 'alok', url: 'https://github.com/Alok-Raturi/test-jenkins-azure.git'
+                }
+            }
+        }
+        stage('az login'){
+            steps {
+                script {
+                    withCredentials([azureServicePrincipal(credentialsId:'AZ_CLI',subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',clientIdVariable: 'AZURE_CLIENT_ID',clientSecretVariable: 'AZURE_CLIENT_SECRET',tenantIdVariable: 'AZURE_TENANT_ID')]) { 
+                        sh '''
+                            az login --service-principal --username ${AZURE_CLIENT_ID} --password ${AZURE_CLIENT_SECRET}  --tenant ${AZURE_TENANT_ID}
+                        '''
+                    }
+                    sh '''
+                        az bicep install
+                    '''
+                }
+            }
+        }
+        stage('deploy bicep template'){
+            steps{
+                dir('V-Net'){
+                    script{
+                        sh '''
+                        az deployment sub create --template-file resource-group.bicep --name resource-group --location 'East US'
+                        '''
+                        env.RG_NAME= sh (script:'''az deployment sub show --name resource-group --query properties.outputs.rg_name.value --output tsv''',returnStdout:true)
+                        
+                        sh '''
+                        echo $RG_NAME
+                        '''
+                        
+                        sh '''
+                        az deployment group create --resource-group ${RG_NAME} --template-file vnet.bicep
+                        '''
+                    }
+                }
+            }
+        }
+        stage('triggerChildJob') {
+            steps {
+                build job: "test", wait: true
+            }
+        }
+        stage('clear workspace'){
+            steps {
+                cleanWs()
+            }
+        }
+    }
+}
