@@ -1,0 +1,4 @@
+subscriptionId: "Azure-For-Students"
+environment: "dev"
+sharedVnetRegion: "eastus"
+resourceVnetRegion: "westus"
