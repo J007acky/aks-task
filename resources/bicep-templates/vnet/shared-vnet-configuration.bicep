@@ -75,6 +75,15 @@ resource privateResourceSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-0
   }
 }
 
+resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+  parent: sharedVnet
+  name: 'GatewaySubnet'
+  properties: {
+    addressPrefix: vnetConfig.gatewaySubnetSharedVnetPrefix
+    defaultOutboundAccess: false
+  }
+}
+
 output sharedVnetId string = sharedVnet.id
 output sharedVnetName string = sharedVnet.name
 output bastionSubnetSharedVnetId string = bastionSubnet.id

@@ -2,23 +2,9 @@ param locationForVNG string
 param virtualNetworkGatewayName string
 param localNetworkGatewayName string
 param publicIpName string
-param gatewaySubnetPrefix string
 param parentVnetName string
 param locationForLNG string
 param parentVnetCidr string
-
-resource vnetToBeConnected 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
-  name: parentVnetName
-}
-
-resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
-  parent: vnetToBeConnected
-  name: 'GatewaySubnet'
-  properties: {
-    addressPrefix: gatewaySubnetPrefix
-    defaultOutboundAccess: false
-  }
-}
 
 resource publicIpForVirtualNetworkGateway 'Microsoft.Network/publicIPAddresses@2022-01-01' = {
   name: publicIpName
@@ -45,7 +31,7 @@ resource virtualNetworkGatewayResource 'Microsoft.Network/virtualNetworkGateways
             id: publicIpForVirtualNetworkGateway.id
           }
           subnet: {
-            id: gatewaySubnetResource.id
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets',parentVnetName,'GatewaySubnet')
           }
         }
       }

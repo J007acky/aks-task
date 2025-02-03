@@ -63,6 +63,15 @@ resource publicSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   }
 }
 
+resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+  parent: resourceVnet
+  name: 'GatewaySubnet'
+  properties: {
+    addressPrefix: vnetConfig.gatewaySubnetResourceVnetPrefix
+    defaultOutboundAccess: false
+  }
+}
+
 output resourceVnetId string = resourceVnet.id
 output resourceVnetName string = resourceVnet.name
 output resourcePublicSubnetId string = privateSubnet.id

@@ -5,17 +5,11 @@ pipeline {
         stage('git checkout') {
             steps{
                 script {
-                    git branch: 'alok', url: 'https://github.com/Alok-Raturi/test-jenkins-azure.git'
+                    git branch: 'alok', url: 'https://github.com/J007acky/aks-task.git'
                 }
             }
         }
-        stage('az cli install'){
-            steps{
-                script {
 
-                }
-            }
-        }
         stage('az login'){
             steps {
                 script {
@@ -30,29 +24,117 @@ pipeline {
                 }
             }
         }
-        stage('deploy bicep template'){
+        stage('Create Resource Groups'){
             steps{
-                dir('V-Net'){
+                dir('resources/bicep-templates/vnet'){
                     script{
                         sh '''
-                        az deployment sub create --template-file resource-group.bicep --name resource-group --location 'East US'
+                        az deployment sub create --template-file resource-groups-vnet-and-resources.bicep --name resource-group-deployment --location 'East US'
                         '''
-                        env.RG_NAME= sh (script:'''az deployment sub show --name resource-group --query properties.outputs.rg_name.value --output tsv''',returnStdout:true)
-                        
+                        env.SHARED_VNET_RG_NAME= sh (script:'''
+                        az deployment sub show --name resource-group-deployment --query properties.outputs.sharedVnetRgName.value --output tsv
+                        ''',returnStdout:true)
+
+                        env.RESOURCE_VNET_RG_NAME= sh (script:'''
+                        az deployment sub show --name resource-group-deployment --query properties.outputs.resourceVnetRg.value --output tsv
+                        ''',returnStdout:true)
+                    }
+                }
+            }
+        }
+
+        stage('Shared VNet Configuration and Resource Deployment'){
+            steps{
+                dir('resources/bicep-templates/vnet'){
+                    script{
                         sh '''
-                        echo $RG_NAME
+                        az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file shared-vnet-configuration.bicep --name shared-vnet-configuration
                         '''
+
+                        env.BASTION_SUBNET_ID_SHARED_VNET= sh (script:'''
+                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.bastionSubnetSharedVnetId.value --output tsv
+                        ''',returnStdout:true)
+
+                        env.PRIVATE_SUBNET_ID_SHARED_VNET= sh (script:'''
+                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.privateResourceSubnetSharedVnet.value --output tsv
+                        ''',returnStdout:true)
                         
+                        env.PUBLIC_SUBNET_ID_SHARED_VNET= sh (script:'''
+                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.publicResourceSubnetSharedVnet.value --output tsv
+                        ''',returnStdout:true)
+                        
+                        env.SHARED_VNET_NAME= sh (script:'''
+                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.sharedVnetName.value --output tsv
+                        ''',returnStdout:true)
+                        
+                        env.SHARED_VNET_ID= sh (script:'''
+                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.sharedVnetId.value --output tsv
+                        ''',returnStdout:true)
+
                         sh '''
-                        az deployment group create --resource-group ${RG_NAME} --template-file vnet.bicep
+                        az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file shared-vnet-resources.bicep --name shared-vnet-resources --parameters bastionSubnetId=$BASTION_SUBNET_ID_SHARED_VNET
                         '''
                     }
                 }
             }
         }
-        stage('triggerChildJob') {
-            steps {
-                build job: "test", wait: true
+
+        stage('Resource Vnet Configuration and Resource Deployment'){
+            steps{
+                dir('resources/bicep-templates/vnet'){
+                    script{
+                        sh '''
+                        az deployment group create --resource-group $RESOURCE_VNET_RG_NAME --template-file resource-vnet-configuration.bicep --name resource-vnet-configuration 
+                        '''
+
+                        env.RESOURCE_VNET_NAME= sh (script:'''
+                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.bastionSubnetSharedVnetId.value --output tsv
+                        ''',returnStdout:true)
+                    }
+                }
+            }
+        }
+
+        stage('Site to Site Setup'){
+            steps{
+                dir('resources/bicep-templates/vnet'){
+                    script{
+                        sh '''
+                        az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file resources/bicep-templates/vnet/s2s-vnet-setup.bicep --name 's2s-resource-setup' --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=Alok@1234 
+                        '''
+
+                        env.SHARED_VNG_NAME= sh (script:'''
+                        az deployment group show --name s2s-resource-setup --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.sharedVngName.value --output tsv
+                        ''',returnStdout:true)
+
+                        env.RESOURCE_VNG_NAME= sh (script:'''
+                        az deployment group show --name s2s-resource-setup --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.resourceVngName.value --output tsv
+                        ''',returnStdout:true)
+                    }
+                }
+            }
+        }
+
+        stage('Reset VNG after making connection'){
+            steps{
+                script{
+                    sh '''
+                    az network vnet-gateway reset -n $SHARED_VNG_NAME  -g $SHARED_VNET_RG_NAME
+                    '''
+                    sh '''
+                    az network vnet-gateway reset -n $RESOURCE_VNG_NAME -g $RESOURCE_VNET_RG_NAME
+                    '''
+                }
+            }
+        }
+
+        stage('az logout'){
+            steps{
+                script{
+                    sh '''
+                        az logout
+                    '''
+                }
             }
         }
         stage('clear workspace'){

@@ -36,7 +36,6 @@ module sharedVnetS2SResourceSetup './modules/site-to-site-ipsec-gateway-configur
       locationForLNG: vnetConfig.resourceVnetResourceRegion
       parentVnetName: sharedVnetName
       parentVnetCidr: vnetConfig.sharedVnetCidr
-      gatewaySubnetPrefix: vnetConfig.gatewaySubnetSharedVnetPrefix
       publicIpName: sharedVnetVngPublicIpName
     }
 }
@@ -51,7 +50,6 @@ module resourceVnetS2SResourceSetup './modules/site-to-site-ipsec-gateway-config
     locationForLNG: vnetConfig.sharedVnetResourceRegion
     parentVnetName: resourceVnetName
     parentVnetCidr: vnetConfig.resourceVnetCidr
-    gatewaySubnetPrefix: vnetConfig.gatewaySubnetResourceVnetPrefix
     publicIpName: resourceVnetVngPublicIpName
   }
 }
