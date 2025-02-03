@@ -38,6 +38,10 @@ resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
       }
     ]
   }
+  dependsOn:[
+    resourceVnet
+    gatewaySubnetResource
+  ]
 }
 
 resource privateSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {

@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker{
+            image 'mcr.microsoft.com/azure-cli:cbl-mariner2.0'
+        }
+    }
 
     stages {
         stage('git checkout') {
@@ -9,7 +13,6 @@ pipeline {
                 }
             }
         }
-
         stage('az login'){
             steps {
                 script {
@@ -20,6 +23,7 @@ pipeline {
                     }
                     sh '''
                         az bicep install
+                        az bicep upgrade
                     '''
                 }
             }
@@ -99,9 +103,12 @@ pipeline {
             steps{
                 dir('resources/bicep-templates/vnet'){
                     script{
-                        sh '''
-                        az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file resources/bicep-templates/vnet/s2s-vnet-setup.bicep --name 's2s-resource-setup' --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=Alok@1234 
-                        '''
+                        
+                        withCredentials([string(credentialsId: 'S2S-SECRET', variable: 'S2S-SECRET')]) {
+                            sh '''
+                            az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file s2s-vnet-setup.bicep --name 's2s-resource-setup' --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=$S2S-SECRET 
+                            '''
+                        }
 
                         env.SHARED_VNG_NAME= sh (script:'''
                         az deployment group show --name s2s-resource-setup --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.sharedVngName.value --output tsv

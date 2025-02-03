@@ -41,6 +41,9 @@ resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
       }
     ]
   }
+  dependsOn:[
+    sharedVnet,bastionSubnet,gatewaySubnetResource
+  ]
 }
 
 resource bastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
