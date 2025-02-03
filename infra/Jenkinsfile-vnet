@@ -9,6 +9,13 @@ pipeline {
                 }
             }
         }
+        stage('az cli install'){
+            steps{
+                script {
+
+                }
+            }
+        }
         stage('az login'){
             steps {
                 script {

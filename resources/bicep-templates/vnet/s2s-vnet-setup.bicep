@@ -81,3 +81,6 @@ module resourceVnetVngToSharedVnetLng './modules/connection-between-lng-and-vng.
   }
 }
 
+
+output sharedVngName string = sharedVnetVngName
+output resourceVngName string = resourceVnetVngName

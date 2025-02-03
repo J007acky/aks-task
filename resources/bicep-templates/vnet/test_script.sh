@@ -27,17 +27,15 @@ RESOURCE_VNET_NAME=$(az deployment group show --name resource-vnet-configuration
 
 
 # S2S
+echo "S2S setup"
 az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file resources/bicep-templates/vnet/s2s-vnet-setup.bicep --name 's2s-resource-setup' --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=Alok@1234
 
+# VNG Names
+SHARED_VNG_NAME=$(az deployment group show --name s2s-resource-setup --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.sharedVngName.value --output tsv)
+RESOURCE_VNG_NAME=$(az deployment group show --name s2s-resource-setup --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.resourceVngName.value --output tsv)
+
+
 # Reset Gateway
-az network vnet-gateway reset -n hub-vng -g Azure-For-Students-eastus-dev-hub-rg
-az network vnet-gateway reset -n spoke-vng -g Azure-For-Students-westus-dev-spoke-rg
-
-
-
-# SPOKE_VNET_ID=$(az deployment group show --name 'spoke-vnet-configuration' --resource-group $SPOKE_RG_NAME --query properties.outputs.spokeVnetId.value --output tsv)
-
-# SPOKE_VNET_NAME=$(az deployment group show --name 'spoke-vnet-configuration' --resource-group $SPOKE_RG_NAME --query properties.outputs.spokeVnetName.value --output tsv)
-
-# echo "VNET PEERING"
-# az deployment group create --resource-group $HUB_RG_NAME --template-file resources/bicep-templates/vnet/hub-and-spoke-peering.bicep --name Hub-and-vnet-peering --parameters hubRgName=$HUB_RG_NAME spokeRgName=$SPOKE_RG_NAME hubVnetName=$HUB_VNET_NAME spokeVnetName=$SPOKE_VNET_NAME hubVnetId=$HUB_VNET_ID spokeVnetId=$SPOKE_VNET_ID
+echo "RESET VNG"
+az network vnet-gateway reset -n $SHARED_VNG_NAME  -g $SHARED_VNET_RG_NAME
+az network vnet-gateway reset -n $RESOURCE_VNG_NAME -g $RESOURCE_VNET_RG_NAME
