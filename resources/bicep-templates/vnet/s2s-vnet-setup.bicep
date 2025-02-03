@@ -52,6 +52,9 @@ module resourceVnetS2SResourceSetup './modules/site-to-site-ipsec-gateway-config
     parentVnetCidr: vnetConfig.resourceVnetCidr
     publicIpName: resourceVnetVngPublicIpName
   }
+  dependsOn:[
+    sharedVnetS2SResourceSetup
+  ]
 }
 
 
@@ -77,6 +80,9 @@ module resourceVnetVngToSharedVnetLng './modules/connection-between-lng-and-vng.
     locationForConnection: vnetConfig.resourceVnetResourceRegion
     connectionName: 'connection-resource-vnet-vng-and-shared-vnet-lng'
   }
+  dependsOn:[
+    sharedVnetVngToResourceVnetLng
+  ]
 }
 
 

@@ -1,15 +1,29 @@
 pipeline {
-    agent {
-        docker{
-            image 'mcr.microsoft.com/azure-cli:cbl-mariner2.0'
+    agent  {
+        docker {
+            image 'ubuntu'
+            args '-u 0'
         }
     }
-
     stages {
         stage('git checkout') {
             steps{
                 script {
                     git branch: 'alok', url: 'https://github.com/J007acky/aks-task.git'
+                }
+            }
+        }
+        stage('installation'){
+            steps{
+                script{
+                    sh '''
+                    echo 'nameserver 8.8.8.8'>/etc/resolv.conf
+                    '''
+                    sh 'apt-get update'
+                    sh 'apt-get upgrade -y'
+                    sh 'apt install curl -y'
+                    sh 'apt install libicu-dev -y'
+                    sh 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
                 }
             }
         }
@@ -92,8 +106,12 @@ pipeline {
                         '''
 
                         env.RESOURCE_VNET_NAME= sh (script:'''
-                        az deployment group show --name shared-vnet-configuration --resource-group $SHARED_VNET_RG_NAME --query properties.outputs.bastionSubnetSharedVnetId.value --output tsv
+                        az deployment group show --name resource-vnet-configuration  --resource-group $RESOURCE_VNET_RG_NAME --query properties.outputs.resourceVnetName.value --output tsv
                         ''',returnStdout:true)
+
+                        sh '''
+                        echo $RESOURCE_VNET_NAME
+                        '''
                     }
                 }
             }
@@ -106,7 +124,7 @@ pipeline {
                         
                         withCredentials([string(credentialsId: 'S2S-SECRET', variable: 'S2S-SECRET')]) {
                             sh '''
-                            az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file s2s-vnet-setup.bicep --name 's2s-resource-setup' --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=$S2S-SECRET 
+                            az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file s2s-vnet-setup.bicep --name 's2s-resource-setup' --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=${S2S-SECRET} 
                             '''
                         }
 

@@ -25,6 +25,7 @@ echo "RESOURCE VNET RESOURCES"
 az deployment group create --resource-group $RESOURCE_VNET_RG_NAME --template-file resources/bicep-templates/vnet/resource-vnet-configuration.bicep --name resource-vnet-configuration 
 RESOURCE_VNET_NAME=$(az deployment group show --name resource-vnet-configuration --resource-group $RESOURCE_VNET_RG_NAME --query properties.outputs.resourceVnetName.value --output tsv)
 
+echo $RESOURCE_VNET_NAME
 
 # S2S
 echo "S2S setup"

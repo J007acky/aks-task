@@ -77,6 +77,6 @@ resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-0
 }
 
 output resourceVnetId string = resourceVnet.id
-output resourceVnetName string = resourceVnet.name
+output resourceVnetName string = virtualNetworkName
 output resourcePublicSubnetId string = privateSubnet.id
 output resourcePrivateSubnetId string = publicSubnet.id
