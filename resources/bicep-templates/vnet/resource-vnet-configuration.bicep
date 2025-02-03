@@ -24,6 +24,15 @@ resource resourceVnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
   }
 }
 
+resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+  parent: resourceVnet
+  name: 'GatewaySubnet'
+  properties: {
+    addressPrefix: vnetConfig.gatewaySubnetResourceVnetPrefix
+    defaultOutboundAccess: false
+  }
+}
+
 resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
   location: location
   name: 'route-traffic-to-gateway-resource-vnet-subnets'
@@ -40,7 +49,6 @@ resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
   }
   dependsOn:[
     resourceVnet
-    gatewaySubnetResource
   ]
 }
 
@@ -54,6 +62,9 @@ resource privateSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = 
       id: gatewayRouteTable.id
     }
   }
+  dependsOn:[
+    gatewaySubnetResource
+  ]
 }
 
 resource publicSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
@@ -65,16 +76,11 @@ resource publicSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
       id: gatewayRouteTable.id
     }
   }
+  dependsOn:[
+    privateSubnet
+  ]
 }
 
-resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
-  parent: resourceVnet
-  name: 'GatewaySubnet'
-  properties: {
-    addressPrefix: vnetConfig.gatewaySubnetResourceVnetPrefix
-    defaultOutboundAccess: false
-  }
-}
 
 output resourceVnetId string = resourceVnet.id
 output resourceVnetName string = virtualNetworkName

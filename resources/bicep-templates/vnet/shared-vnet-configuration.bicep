@@ -42,7 +42,7 @@ resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
     ]
   }
   dependsOn:[
-    sharedVnet,bastionSubnet,gatewaySubnetResource
+    sharedVnet
   ]
 }
 
@@ -64,6 +64,9 @@ resource publicResourceSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05
       id: gatewayRouteTable.id
     }
   }
+  dependsOn:[
+    bastionSubnet
+  ]
 }
 
 resource privateResourceSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
@@ -76,6 +79,9 @@ resource privateResourceSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-0
       id: gatewayRouteTable.id
     }
   }
+  dependsOn:[
+    publicResourceSubnet
+  ]
 }
 
 resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
@@ -85,6 +91,9 @@ resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-0
     addressPrefix: vnetConfig.gatewaySubnetSharedVnetPrefix
     defaultOutboundAccess: false
   }
+  dependsOn:[
+    privateResourceSubnet
+  ]
 }
 
 output sharedVnetId string = sharedVnet.id
