@@ -17,7 +17,25 @@ pipeline {
             steps{
                 dir('resources/bicep-templates/vnet/config-files'){
                     script{
-                        def config = readYaml file: 'dev-deployment-name.yml'
+
+                        def config;
+                        def environment = readYaml file: 'naming-config.yml'
+
+                        switch(environment.environment) {
+                            case 'dev': 
+                                config = readYaml file: 'dev-deployment-name.yml';
+                                break;
+                            case 'qa': 
+                                config = readYaml file: 'qa-deployment-name.yml';
+                                break;
+                            case 'prod': 
+                                config= readYaml file: 'prod-deployment-name.yml'
+                                break;
+                            default: 
+                                config = readYaml file: 'dev-deployment-name.yml'
+                                break;
+                        }
+                        println(config)
                         env.SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION = config.SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION
                         env.RG_DEPLOYMENT_NAME=config.RG_DEPLOYMENT_NAME
                         env.SHARED_VNET_CONFIGURATION_DEPLOYMENT_NAME=config.SHARED_VNET_CONFIGURATION_DEPLOYMENT_NAME
