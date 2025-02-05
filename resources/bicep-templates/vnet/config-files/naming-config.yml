@@ -1,4 +1,4 @@
-subscriptionId: "Azure-For-Students"
+subscriptionId: "azure-for-students"
 environment: "dev"
 sharedVnetRegion: "eastus"
 resourceVnetRegion: "westus"

@@ -22,6 +22,8 @@ resource bastionHost 'Microsoft.Network/bastionHosts@2022-01-01' = {
   name: bastionHostName
   location: vnetConfig.sharedVnetResourceRegion
   properties: {
+    enableShareableLink: true
+    enableTunneling: true
     ipConfigurations: [
       {
         name: 'bastion-subnet'
@@ -35,6 +37,9 @@ resource bastionHost 'Microsoft.Network/bastionHosts@2022-01-01' = {
         }
       }
     ]
+  }
+  sku:{
+    name:'Standard'
   }
 }
 
