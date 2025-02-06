@@ -1,4 +1,4 @@
-GIT_REPO_URL: "https://github.com/madhurgupta004/Jenkins-Practice.git"
+GIT_REPO_URL: "https://github.com/J007acky/aks-task.git"
 SUBSCRIPTION_NAME: "azure-for-students"
 ENVIRONMENT: "dev"
 RESOURCES_REGION: "westus"
