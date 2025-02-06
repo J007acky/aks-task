@@ -1,0 +1,80 @@
+pipeline{
+    agent any
+    environment {
+        ROLE_BICEPPARAM_TEMPLATE_PATH = 'resources/bicep-templates/roles/roles.bicepparam'
+        ROLE_ASSIGNMENTS_BICEP_TEMPLATE_PATH = 'resources/bicep-templates/role-assignments/create-role-assignment.bicep'
+    }
+    stages {
+        stage('Login to Azure') {
+            steps {
+                script {
+                    withCredentials([azureServicePrincipal(
+                        credentialsId:'JENKINS_SERVICE_PRINCIPAL',
+                        subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
+                        clientIdVariable: 'AZURE_CLIENT_ID',
+                        clientSecretVariable: 'AZURE_CLIENT_SECRET',
+                        tenantIdVariable: 'AZURE_TENANT_ID'
+                        )]){
+                        sh "az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID}"
+                        sh "az account set --subscription ${AZURE_SUBSCRIPTION_ID}"
+                        }
+                }
+            }
+        }
+        stage('Create roles'){
+            steps{
+                script{
+                    def config = readYaml file: './infra/config.yaml'
+                    sh """
+                    az deployment sub create \
+                        --location "${config.RESOURCES_REGION}" \
+                        --parameters "${ROLE_BICEPPARAM_TEMPLATE_PATH}" \
+                        --name "${config.ENVIRONMENT}-roles-deployment" \
+                    """
+                }
+            }
+        }
+        stage('Fetching role definition ids'){
+            steps{
+                script{
+                    def config = readYaml file: './infra/config.yaml'
+                    echo "Getting role definition ids"
+                    env.roleDefinitionIdsJSON = sh (
+                        script: "az deployment sub show --name ${config.ENVIRONMENT}-roles-deployment --query properties.outputs.roleDefinitionIds.value --output json",
+                        returnStdout: true
+                    ).trim()
+
+                    sh "echo role defs fetched"
+                }
+            }
+        }
+        stage('Create role assignment'){
+            steps {
+                script{
+                    def config = readYaml file: './infra/config.yaml'
+                    def userIds = [config.READ_ONLY_USER_PRINCIPAL_ID, config.READ_AND_EDIT_USER_PRINCIPAL_ID, config.READ_AND_DELETE_USER_PRINCIPAL_ID]
+                    def roleDefinitionIds = readJSON text: env.roleDefinitionIdsJSON
+                    def temp = [0, 1, 2]
+                    temp.each { index ->
+                        sh """
+                        az deployment sub create \
+                        --location "${config.RESOURCES_REGION}" \
+                        --template-file "${ROLE_ASSIGNMENTS_BICEP_TEMPLATE_PATH}" \
+                        --name "${config.ENVIRONMENT}-role-assignments-deployment" \
+                        --parameters userPrincipalId=${userIds[index]} roleDefinitionId=${roleDefinitionIds[index]} \
+                        """
+                    }
+                    sh "echo role assignments created"
+                }
+            }
+        }
+        stage("Logout from Azure"){
+            steps{
+                script{
+                    sh "az logout"
+                }
+            }
+        }
+        
+    }
+}

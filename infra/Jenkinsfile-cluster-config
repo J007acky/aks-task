@@ -1,0 +1,61 @@
+pipeline {
+    agent any 
+    parameters{
+        string(name: 'VM_IP', description: 'Public IP adress of the VM to SSH', defaultValue: '172.172.187.240')
+        string(name: 'PUBLIC_IP_NAME', description: 'Name of the public IP for public ingress', defaultValue: '3ef62b1d-9b6b-4295-a34b-207a4c3f78a5')
+    }
+
+    stages {
+        stage('SSH into VM and deploy resources') {
+            steps {
+                script {
+                    def config = readYaml file: './infra/config.yaml'
+                    def prefix = "${config.SUBSCRIPTION_NAME}-${config.RESOURCES_REGION}-${config.ENVIRONMENT}"
+                    withCredentials([
+                        sshUserPrivateKey(
+                            credentialsId: 'SSH_CREDENTIALS', 
+                            keyFileVariable: 'SSH_KEY_FILE', 
+                            usernameVariable: 'SSH_USER'
+                        ),
+                        azureServicePrincipal(
+                        credentialsId:'JENKINS_SERVICE_PRINCIPAL',
+                        subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
+                        clientIdVariable: 'AZURE_CLIENT_ID',
+                        clientSecretVariable: 'AZURE_CLIENT_SECRET',
+                        tenantIdVariable: 'AZURE_TENANT_ID'
+                        ) 
+                    ]) {
+                        sh """
+                        az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID} 
+                        az account set --subscription "${AZURE_SUBSCRIPTION_ID}" 
+                        az role assignment create --assignee "${AZURE_CLIENT_ID}" --role "Azure Kubernetes Service RBAC Cluster Admin" --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${prefix}-aks-rg/providers/Microsoft.ContainerService/managedClusters/${prefix}-aks"
+                        """
+                        sh """
+                        ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${SSH_USER}@${params.VM_IP}  '''
+                        az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID} ; 
+                        az account set --subscription ${AZURE_SUBSCRIPTION_ID} ;
+                        az aks get-credentials --resource-group ${prefix}-aks-rg --name ${prefix}-aks --overwrite-existing ;
+                        kubelogin convert-kubeconfig -l azurecli ;
+                        az extension add --name aks-preview ;
+                        az extension update --name aks-preview ;
+                        az aks approuting enable --resource-group ${prefix}-aks-rg --name ${prefix}-aks --nginx None ;
+                        rm -rf aks-task ;
+                        git clone ${config.GIT_REPO_URL} aks-task ;
+                        cd aks-task/resources/k8s-resources ;
+                        kubectl create namespace public-resources ;
+                        kubectl create namespace private-resources ;
+                        export IP=${PUBLIC_IP_NAME} ;
+                        export RG=MC_${prefix}-aks-rg_${prefix}-aks_${config.RESOURCES_REGION} ;
+                        envsubst < nginx-public-controller.yaml | kubectl apply -f - ;
+                        kubectl apply -f nginx-internal-controller.yaml -f private-ingress-resource.yaml -f public-ingress-resource.yaml -f resources-private.yaml -f resources-public.yaml ;
+                        cd ;
+                        rm -rf aks-task ;
+                        az logout ;
+                        '''
+                        """
+                        }
+                }
+            }
+        }
+    }
+}
