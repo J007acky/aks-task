@@ -17,7 +17,7 @@ pipeline {
                 script {
                     def config = readYaml file: './resources/bicep-templates/aks/config.yml'
                     sh """
-                        az deployment sub create --location '${config.location}' --parameters 'resource-group.bicepparam' --name bicep-rg-deployment
+                        az deployment sub create --location '${config.location}' --parameters './resources/bicep-templates/aks/resource-group.bicepparam' --name bicep-rg-deployment
                     """
                 }
             }
