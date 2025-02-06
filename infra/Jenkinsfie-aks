@@ -50,6 +50,12 @@ pipeline {
                         --parameters './resources/bicep-templates/aks/managed-identity/managed-identity.bicepparam' \
                         --name identity-deployment
                     """
+                    sh """
+                        az deployment group create \
+                        --resource-group '${config.subscription}-${config.location}-${config.environment}-resource-rg' \
+                        --parameters './resources/bicep-templates/aks/managed-identity/role-assignment.bicepparam' \
+                        --name role-assignment-deployment
+                        """
                 }
             }
         }
