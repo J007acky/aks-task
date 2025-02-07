@@ -1,0 +1,4 @@
+SUBSCRIPTION_NAME: "azure-for-students"
+RESOURCES_REGION: "westus"
+SHARED_REGION: "eastus"
+ENVIRONMENT: "dev"
