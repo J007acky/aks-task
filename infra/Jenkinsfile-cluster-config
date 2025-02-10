@@ -11,7 +11,6 @@ pipeline {
                 script {
                     def config = readYaml file: './config/main-config.yml'
                     def resourcePrefix = "${config.SUBSCRIPTION_NAME}-${config.RESOURCES_REGION}-${config.ENVIRONMENT}"
-                    def sharedPrefix = "${config.SUBSCRIPTION_NAME}-${config.SHARED_REGION}-${config.ENVIRONMENT}"
                     withCredentials([
                         sshUserPrivateKey(
                             credentialsId: 'SSH_CREDENTIALS', 
@@ -29,12 +28,6 @@ pipeline {
                         sh """
                         az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID} 
                         az account set --subscription "${AZURE_SUBSCRIPTION_ID}" 
-                        az network private-dns link vnet create \
-                        --resource-group 'MC_${resourcePrefix}-aks-rg_${resourcePrefix}-aks_${config.RESOURCES_REGION}' \
-                        --zone-name '${params.ZONE_NAME}' \
-                        --name 'create-link-with-shared-vnet' \
-                        --virtual-network '/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${sharedPrefix}-shared-rg/providers/Microsoft.Network/virtualNetworks/${sharedPrefix}-shared-vnet' \
-                        --registration-enabled true 
                         az role assignment create --assignee "${AZURE_CLIENT_ID}" --role "Azure Kubernetes Service RBAC Cluster Admin" --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${resourcePrefix}-aks-rg/providers/Microsoft.ContainerService/managedClusters/${resourcePrefix}-aks"
                         """
                         sh """
