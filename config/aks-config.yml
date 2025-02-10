@@ -1,0 +1,13 @@
+# AKS Cluster Config
+
+LNX_ADMIN_USERNAME: "aksadmin"
+DNS_PREFIX: "aks-net"
+AGENT_COUNT: 2
+AGENT_VM_SIZE: "Standard_DS2_v2"
+SVC_CIDR: "30.1.0.0/18"
+DNS_SVC_IP: "30.1.2.10"
+
+# Managed Identity config
+ROLE_NAMES:
+  - "Azure Kubernetes Service Cluster User Role"
+  - "Network Contributor"

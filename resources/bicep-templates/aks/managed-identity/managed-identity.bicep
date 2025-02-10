@@ -1,25 +1,13 @@
-@description('Name of the AKS Managed Identity.')
+@description('Name of the AKS managed identity.')
 param aksManagedIdentityName string
 
-@description('Name of the AKS Managed Identity.')
+@description('Name of the AKS managed identity.')
 param kubeletManagedIdentityName string
 
-@description('Location of the Managed Identity.')
-param location string = 'WestUS'
+@description('Location of the managed identity.')
+param location string
 
-@description('Resource Group Name of the Virtual Network.')
-param vNetName string
-
-@description('Resource Group Name of the Virtual Network.')
-param vnetResourceGroup string
-
-resource aksVnet 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
-  name: vNetName
-  scope: resourceGroup(vnetResourceGroup)
-}
-
-
-@description('Managed Identity for AKS control plane to interact with other Azure resources.')
+@description('Managed Identity for AKS control plane.')
 resource AksManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: aksManagedIdentityName
   location: location
@@ -29,4 +17,15 @@ resource AksManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@20
 resource KubeletManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: kubeletManagedIdentityName
   location: location
+}
+
+@description('Managed Identity Operator role to AKS Managed Identity.')
+resource identityOperatorRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  name: guid(AksManagedIdentity.id, 'Managed Identity Operator')
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'Managed Identity Operator')
+    principalId: AksManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+  scope: resourceGroup()
 }

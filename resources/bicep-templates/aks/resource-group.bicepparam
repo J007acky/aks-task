@@ -1,9 +1,9 @@
 using 'resource-group.bicep'
 
-var configFile = loadYamlContent('config.yml')
+var configFile = loadYamlContent('../../../config/main-config.yml')
 
 // Prefix for the resource group names
-param rgName = '${configFile.subscription}-${configFile.location}-${configFile.environment}'
+param rgName = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-${configFile.ENVIRONMENT}'
 
 // Location for the resource group
-param rgLocation = configFile.location
+param rgLocation = configFile.RESOURCES_REGION

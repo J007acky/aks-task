@@ -1,31 +1,31 @@
 using 'aks-cluster.bicep'
 
-var configFile = loadYamlContent('../config.yml')
+var configFile = loadYamlContent('../../../../config/main-config.yml')
+var aksConfigFile = loadYamlContent('../../../../config/aks-config.yml')
 
 // Location where the AKS cluster will be created
-param aksLocation = configFile.location
-
-// Subnet ID where cluster Nodes will be deployed
-// param vnetSubnetId = '/subscriptions/82103d68-e454-42a4-acbf-1b71e64bca29/resourceGroups/Azure-For-Students-westus-dev-resource-rg/providers/Microsoft.Network/virtualNetworks/Azure-For-Students-westus-dev-resource-vnet/subnets/Azure-For-Students-westus-dev-resource-vnet-private-subnet'
+param aksLocation = configFile.RESOURCES_REGION
 
 // Resource Group name prefix
-param rgNamePrefix = '${configFile.subscription}-${configFile.location}-${configFile.environment}'
+param rgNamePrefix = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-${configFile.ENVIRONMENT}'
 
 // DNS prefix for the AKS cluster
-param dnsPrefix = 'rahul-net'
+param dnsPrefix = aksConfigFile.DNS_PREFIX
 
 // SSH RSA public key string
 param sshRSAPublicKey = 'SSH_KEY'
 
 // Number of nodes for the cluster
-param agentCount = 2
+param agentCount = aksConfigFile.AGENT_COUNT
 
-// Size of the Virtual Machine for agent nodes
-param agentVMSize = 'Standard_DS2_v2'
+// Size of the VM for agent nodes
+param agentVMSize = aksConfigFile.AGENT_VM_SIZE
 
-// User name for the Linux Virtual Machines
-param linuxAdminUsername = 'Rahul'
+// User name for the Linux VM
+param linuxAdminUsername = aksConfigFile.LNX_ADMIN_USERNAME
 
-param serviceCidr = '30.1.0.0/18'
+// serviceCidr is the IP address range for the Kubernetes service address range
+param serviceCidr = aksConfigFile.SVC_CIDR
 
-param dnsServiceIP = '30.1.2.10'
+// dnsServiceIP is the IP address within the Kubernetes service address range that will be used by cluster service discovery (kube-dns)
+param dnsServiceIP = aksConfigFile.DNS_SVC_IP

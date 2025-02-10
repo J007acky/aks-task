@@ -1,13 +1,9 @@
 using 'managed-identity.bicep'
 
-var configFile = loadYamlContent('../config.yml')
+var configFile = loadYamlContent('../../../../config/main-config.yml')
 
-param aksManagedIdentityName = '${configFile.subscription}-${configFile.location}-${configFile.environment}-identity-aks-managed-identity'
+param aksManagedIdentityName = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-${configFile.ENVIRONMENT}-identity-aks-managed-identity'
 
-param kubeletManagedIdentityName = '${configFile.subscription}-${configFile.location}-${configFile.environment}-identity-kubelet-managed-identity'
+param kubeletManagedIdentityName = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-${configFile.ENVIRONMENT}-identity-kubelet-managed-identity'
 
-param location = configFile.location
-
-param vnetResourceGroup = '${configFile.subscription}-${configFile.location}-${configFile.environment}-resource-rg'
-
-param vNetName = '${configFile.subscription}-${configFile.location}-${configFile.environment}-resource-vnet'
+param location = configFile.RESOURCES_REGION

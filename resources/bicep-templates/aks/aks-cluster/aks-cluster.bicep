@@ -1,11 +1,11 @@
-@description('Resource Group name prefix')
+@description('Resource group name prefix')
 param rgNamePrefix string
 
 
-@description('The location of the Managed Cluster resource.')
+@description('The location of the AKS Cluster resource.')
 param aksLocation string
 
-@description('Optional DNS prefix to use with hosted Kubernetes API server FQDN.')
+@description('DNS prefix for FQDN.')
 param dnsPrefix string
 
 @description('The number of nodes for the cluster.')
@@ -22,10 +22,10 @@ param linuxAdminUsername string
 @description('Configure all linux machines with the SSH RSA public key string.')
 param sshRSAPublicKey string
 
-@description('IP address range for the Kubernetes service address range.')
+@description('CIDR range for the Kubernetes service to allocate IPs.')
 param serviceCidr string
 
-@description('IP address within the Kubernetes service address range that will be used by cluster service discovery (kube-dns).')
+@description('IP address for the Kubernetes DNS service.')
 param dnsServiceIP string
 
 var clusterName = '${rgNamePrefix}-aks'
@@ -56,6 +56,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
     }
   }
   properties: {
+    
     identityProfile:{
       kubeletidentity:{
         clientId: kubeletManagedIdentity.properties.clientId
@@ -86,9 +87,16 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
       loadBalancerSku: 'standard'
       serviceCidr: serviceCidr
       dnsServiceIP: dnsServiceIP
+      loadBalancerProfile: {
+        outboundIPs: {
+          publicIPs: [
+            
+          ]
+        }
+      }
     }
     apiServerAccessProfile: {
-      enablePrivateCluster: true // Enable private cluster
+      enablePrivateCluster: true
     }
     linuxProfile: {
       adminUsername: linuxAdminUsername
@@ -100,10 +108,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
         ]
       }
     }
+    
     dnsPrefix: dnsPrefix
-    // ingressProfile: {
-    //   webAppRouting: {enabled: true}}
   }
 }
 
-output controlPlaneFQDN string = aks.properties.fqdn
+output privateControlPlaneFQDN string = aks.properties.privateFQDN
+output resourceId string = aks.id

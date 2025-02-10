@@ -12,12 +12,24 @@ pipeline {
                 }
             }
         }
+        stage('set Environment variables') {
+            steps {
+                script {
+                    def config = readYaml file: './config/main-config.yaml'
+                    env.AZURE_SUBSCRIPTION_ID = config.SUBSCRIPTION_NAME
+                    env.AZURE_LOCATION = config.RESOURCES_REGION
+                    env.AZURE_LOCATION_SHARED = config.SHARED_REGION
+                    env.AZURE_ENVIRONMENT = config.ENVIRONMENT
+                }
+            }
+        }
         stage('Deploy Resource Groups') {
             steps {
                 script {
-                    def config = readYaml file: './resources/bicep-templates/aks/config.yml'
                     sh """
-                        az deployment sub create --location '${config.location}' --parameters './resources/bicep-templates/aks/resource-group.bicepparam' --name bicep-rg-deployment
+                        az deployment sub create --location '${AZURE_SUBSCRIPTION_ID}' \
+                        --parameters './resources/bicep-templates/aks/resource-group.bicepparam' \
+                        --name '${AZURE_ENVIRONMENT}-aks-rg-deployment'
                     """
                 }
             }
@@ -25,16 +37,15 @@ pipeline {
         stage('Deploy Virtual Machine') {
             steps {
                 script {
-                    def config = readYaml file: './resources/bicep-templates/aks/config.yml'
-                    withCredentials([string(credentialsId: 'SSH_KEY_NODE', variable: 'SSH_KEY')]) {
+                    withCredentials([string(credentialsId: 'SSH_KEY_NODE', variable: 'SSH_KEY'),usernamePassword(credentialsId: 'VM_LOGIN_PROFILE', passwordVariable: 'VM_USR_PWD', usernameVariable: 'VM_USR_NAME')]) {
                         sh """
                         az deployment group create \
-                        --resource-group '${config.subscription}-${config.locationShared}-${config.environment}-shared-rg' \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-shared-rg' \
                         --parameters './resources/bicep-templates/aks/virtual-machine/test-vm.bicepparam' \
-                        --parameters vmUsername=Rahul \
-                        vmPassword='Rahul@123' \
-                        sshKeyVM='${SSH_KEY}'
-
+                        --parameters vmUsername='${VM_USR_NAME}' \
+                        vmPassword='${VM_USR_PWD}' \
+                        sshKeyVM='${SSH_KEY}' \
+                        --name '${AZURE_ENVIRONMENT}-vm-deployment'
                     """
                     }
                 }
@@ -43,33 +54,32 @@ pipeline {
         stage('Deploy Managed Identity') {
             steps {
                 script {
-                    def config = readYaml file: './resources/bicep-templates/aks/config.yml'
                     sh """
                         az deployment group create \
-                        --resource-group '${config.subscription}-${config.location}-${config.environment}-aks-rg' \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg' \
                         --parameters './resources/bicep-templates/aks/managed-identity/managed-identity.bicepparam' \
-                        --name identity-deployment
+                        --name '${AZURE_ENVIRONMENT}-identity-deployment'
                     """
                     sh """
                         az deployment group create \
-                        --resource-group '${config.subscription}-${config.location}-${config.environment}-resource-rg' \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-resource-rg' \
                         --parameters './resources/bicep-templates/aks/managed-identity/role-assignment.bicepparam' \
-                        --name role-assignment-deployment
+                        --name '${AZURE_ENVIRONMENT}-role-assignment-deployment'
                         """
                 }
             }
         }
 
-        stage('Deploy Bicep Files') {
+        stage('Deploy AKS cluster') {
             steps {
                 script {
-                    def config = readYaml file: './resources/bicep-templates/aks/config.yml'
                     withCredentials([string(credentialsId: 'SSH_KEY_NODE', variable: 'SSH_KEY')]) {
                         sh """
                         az deployment group create\
-                         --resource-group '${config.subscription}-${config.location}-${config.environment}-aks-rg' \
+                         --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg' \
                          --parameters './resources/bicep-templates/aks/aks-cluster/aks-cluster.bicepparam'\
                          --parameters sshRSAPublicKey='${SSH_KEY}'
+                         --name '${AZURE_ENVIRONMENT}-aks-deployment'
                     """
                     }
                 }
