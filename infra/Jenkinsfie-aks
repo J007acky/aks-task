@@ -15,7 +15,7 @@ pipeline {
         stage('set Environment variables') {
             steps {
                 script {
-                    def config = readYaml file: './config/main-config.yaml'
+                    def config = readYaml file: './config/main-config.yml'
                     env.AZURE_SUBSCRIPTION_ID = config.SUBSCRIPTION_NAME
                     env.AZURE_LOCATION = config.RESOURCES_REGION
                     env.AZURE_LOCATION_SHARED = config.SHARED_REGION
