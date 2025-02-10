@@ -3,7 +3,7 @@ using 'test-vm.bicep'
 var configFile = loadYamlContent('../../../../config/main-config.yml')
 
 // Name of the Virtual Machine
-param rgNamePrefix = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-${configFile.ENVIRONMENT}'
+param rgNamePrefix = '${configFile.SUBSCRIPTION_NAME}-${configFile.SHARED_REGION}-${configFile.ENVIRONMENT}'
 
 // Location of the Virtual Machine
 param vmLocation = configFile.SHARED_REGION
