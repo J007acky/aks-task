@@ -46,7 +46,7 @@ pipeline {
                         kubectl create namespace public-resources ;
                         kubectl create namespace private-resources ;
                         export IP=${resourcePrefix}-aks-ip ;
-                        export RG=MC_${resourcePrefix}-aks-rg_${resourcePrefix}-aks_${config.RESOURCES_REGION} ;
+                        export RG=${resourcePrefix}-aks-rg ;
                         envsubst < nginx-public-controller.yaml | kubectl apply -f - ;
                         kubectl apply -f nginx-internal-controller.yaml -f private-ingress-resource.yaml -f public-ingress-resource.yaml -f resources-private.yaml -f resources-public.yaml ;
                         cd ;
