@@ -142,9 +142,9 @@ pipeline {
                 dir('resources/bicep-templates/vnet'){
                     script{
                         
-                        withCredentials([string(credentialsId: 'S2S-SECRET', variable: 'S2S-SECRET')]) {
+                        withCredentials([string(credentialsId: 'S2S-SECRET', variable: 's2s')]) {
                             sh '''
-                            az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file s2s-vnet-setup.bicep --name $SITE_TO_SITE_RESOURCE_DEPLOYMENT_NAME --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey=${S2S-SECRET} 
+                            az deployment group create --resource-group $SHARED_VNET_RG_NAME --template-file s2s-vnet-setup.bicep --name $SITE_TO_SITE_RESOURCE_DEPLOYMENT_NAME --parameters sharedVnetRg=$SHARED_VNET_RG_NAME resourceVnetRg=$RESOURCE_VNET_RG_NAME sharedVnetName=$SHARED_VNET_NAME resourceVnetName=$RESOURCE_VNET_NAME sharedKey="${s2s}" 
                             '''
                         }
 
