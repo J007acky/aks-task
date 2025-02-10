@@ -2,7 +2,6 @@ pipeline {
     agent any 
     parameters{
         string(name: 'VM_IP', description: 'Public IP adress of the VM to SSH', defaultValue: '172.191.238.193')
-        string(name: 'ZONE_NAME', description: 'Name of the private DNS zone', defaultValue: 'fa64aae5-b62d-493e-ba0a-20a5a9ed13df.privatelink.westus.azmk8s.io')
         }
 
     stages {
@@ -41,7 +40,9 @@ pipeline {
                         az aks approuting enable --resource-group ${resourcePrefix}-aks-rg --name ${resourcePrefix}-aks --nginx None ;
                         rm -rf aks-task ;
                         git clone https://github.com/J007acky/aks-task.git aks-task ;
-                        cd aks-task/resources/k8s-resources ;
+                        cd aks-task ;
+                        git checkout madhur ;
+                        cd resources/k8s-resources ;
                         kubectl create namespace public-resources ;
                         kubectl create namespace private-resources ;
                         export IP=${resourcePrefix}-aks-ip ;
