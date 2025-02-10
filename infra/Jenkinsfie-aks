@@ -40,7 +40,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'SSH_KEY_NODE', variable: 'SSH_KEY'),usernamePassword(credentialsId: 'VM_LOGIN_PROFILE', passwordVariable: 'VM_USR_PWD', usernameVariable: 'VM_USR_NAME')]) {
                         sh """
                         az deployment group create \
-                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-shared-rg' \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_LOCATION_SHARED}-shared-rg' \
                         --parameters './resources/bicep-templates/aks/virtual-machine/test-vm.bicepparam' \
                         --parameters vmUsername='${VM_USR_NAME}' \
                         vmPassword='${VM_USR_PWD}' \
