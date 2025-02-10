@@ -46,6 +46,20 @@ resource kubeletManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentitie
   name: kubeletManagedIdentityId
 }
 
+
+resource aksPublicIP 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
+  name: '${rgNamePrefix}-aks-ip'
+  location: resourceGroup().location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+
 resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
   name: clusterName
   location: aksLocation
@@ -90,7 +104,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
       loadBalancerProfile: {
         outboundIPs: {
           publicIPs: [
-            
+            aksPublicIP
           ]
         }
       }
