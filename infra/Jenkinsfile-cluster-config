@@ -2,7 +2,7 @@ pipeline {
     agent any 
     parameters{
         string(name: 'VM_IP', description: 'Public IP adress of the VM to SSH', defaultValue: '172.191.238.193')
-        string(name: 'ZONE_NAME', description: 'Name of the private DNS zone', defaultValue: '66dce611-0fc1-457e-a5a8-22e53ee9edb9.privatelink.westus.azmk8s.io')
+        string(name: 'ZONE_NAME', description: 'Name of the private DNS zone', defaultValue: 'fa64aae5-b62d-493e-ba0a-20a5a9ed13df.privatelink.westus.azmk8s.io')
         }
 
     stages {
