@@ -9,7 +9,7 @@ pipeline {
         stage('SSH into VM and deploy resources') {
             steps {
                 script {
-                    def config = readYaml file: './infra/config.yaml'
+                    def config = readYaml file: './config/main-config.yml'
                     def prefix = "${config.SUBSCRIPTION_NAME}-${config.RESOURCES_REGION}-${config.ENVIRONMENT}"
                     withCredentials([
                         sshUserPrivateKey(

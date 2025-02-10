@@ -1,8 +1,7 @@
 using 'create-role.bicep'
-var SUBSCRIPTION_NAME = 'azure-for-students'
-var ENVIRONMENT = 'dev'
-var RESOURCES_REGION = 'westus'
-var PREFIX = '${SUBSCRIPTION_NAME}-${RESOURCES_REGION}-${ENVIRONMENT}'
+
+var config = loadYamlContent('../../../config/main-config.yml')
+var PREFIX = '${config.SUBSCRIPTION_NAME}-${config.RESOURCES_REGION}-${config.ENVIRONMENT}'
 param roles = [
   {
     roleName: '${PREFIX}-aks-read-and-delete-role'
@@ -67,7 +66,6 @@ param roles = [
       'Microsoft.ContainerService/managedClusters/secrets/*'
       'Microsoft.ContainerService/managedClusters/serviceaccounts/*'
       'Microsoft.ContainerService/managedClusters/services/*'
-
     ]
     notDataActions: []
   }
