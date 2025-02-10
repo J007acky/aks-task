@@ -21,13 +21,13 @@ pipeline {
                         def environment = readYaml file: 'main-config.yml'
                         switch(environment.ENVIRONMENT) {
                             case 'qa': 
-                                config = readYaml file: 'qa-deployment-name.yml';
+                                config = readYaml file: 'qa-vnet-deployment-name.yml';
                                 break;
                             case 'prod': 
-                                config= readYaml file: 'prod-deployment-name.yml'
+                                config= readYaml file: 'prod-vnet-deployment-name.yml'
                                 break;
                             default: 
-                                config = readYaml file: 'dev-deployment-name.yml'
+                                config = readYaml file: 'dev-vnet-deployment-name.yml'
                                 break;
                         }
                         env.SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION = config.SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION
