@@ -9,5 +9,5 @@ DNS_SVC_IP: "30.1.2.10"
 
 # Managed Identity config
 ROLE_NAMES:
-  - "Azure Kubernetes Service Cluster User Role"
-  - "Network Contributor"
+  - "4abbcc35-e782-43d8-92c5-2d3f1bd2253f"  # Cluster User Role
+  - "4d97b98b-1d4f-4787-a291-c67834d212e7"  # Network Contributor Role

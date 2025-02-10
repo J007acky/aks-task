@@ -21,9 +21,9 @@ resource KubeletManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentitie
 
 @description('Managed Identity Operator role to AKS Managed Identity.')
 resource identityOperatorRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid(AksManagedIdentity.id, 'Managed Identity Operator')
+  name: guid(AksManagedIdentity.id, 'f1a07417-d97a-45cb-824c-7a7467783830')
   properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'Managed Identity Operator')
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'f1a07417-d97a-45cb-824c-7a7467783830')
     principalId: AksManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
