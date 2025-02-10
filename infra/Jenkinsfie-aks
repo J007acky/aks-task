@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        az deployment sub create --location '${AZURE_SUBSCRIPTION_ID}' \
+                        az deployment sub create --location '${AZURE_LOCATION}' \
                         --parameters './resources/bicep-templates/aks/resource-group.bicepparam' \
                         --name '${AZURE_ENVIRONMENT}-aks-rg-deployment'
                     """
