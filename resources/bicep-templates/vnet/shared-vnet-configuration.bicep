@@ -1,10 +1,9 @@
-
-var vnetConfig = loadYamlContent('./config-files/vnet-config.yaml')
-var namingConfig = loadYamlContent('./config-files/naming-config.yml')
+var vnetConfig = loadYamlContent('../../../config/vnet-config.yaml')
+var namingConfig = loadYamlContent('../../../config/main-config.yml')
 
 var location = vnetConfig.sharedVnetResourceRegion
 
-var virtualNetworkName = '${namingConfig.subscriptionId}-${namingConfig.sharedVnetRegion}-${namingConfig.environment}-shared-vnet'
+var virtualNetworkName = '${namingConfig.SUBSCRIPTION_NAME}-${namingConfig.SHARED_REGION}-${namingConfig.ENVIRONMENT}-shared-vnet'
 var addressSpace = vnetConfig.sharedVnetCidr
 
 var bastionSubnetPrefix = vnetConfig.bastionSubnetSharedVnetPrefix
@@ -101,4 +100,3 @@ output sharedVnetName string = sharedVnet.name
 output bastionSubnetSharedVnetId string = bastionSubnet.id
 output publicResourceSubnetSharedVnet string = publicResourceSubnet.id
 output privateResourceSubnetSharedVnet string = privateResourceSubnet.id
-

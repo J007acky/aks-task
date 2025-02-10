@@ -1,25 +1,36 @@
-param hubRgName string
-param spokeRgName string
-param hubVnetName string
-param spokeVnetName string
-param hubVnetId string
-param spokeVnetId string
+@description('The resource group of shared vnet')
+param sharedVnetRgName string
 
-module hub_to_spoke_peering './modules/vnet-peering.bicep'={
-  scope:resourceGroup(hubRgName)
+@description('The resource group of resource vnet')
+param resourceVnetRgName string
+
+@description('The name of your shared Vnet')
+param sharedVnetName string
+
+@description('The name of your resource vnet')
+param resourceVnetName string
+
+@description('The ID of shared Vnet')
+param sharedVnetId string
+
+@description('The id of resource Vnet')
+param resourceVnetId string
+
+module sharedVnetToResourceVnetPeering './modules/vnet-peering.bicep'={
+  scope:resourceGroup(sharedVnetRgName)
   name: 'hub-to-spoke-peering'
   params:{
-    parentVnetName: hubVnetName
-    remoteVnetId: spokeVnetId
+    parentVnetName: sharedVnetName
+    remoteVnetId: resourceVnetId
   }
 }
 
 
-module spoke_to_hub_peering './modules/vnet-peering.bicep'={
-  scope:resourceGroup(spokeRgName)
+module resourceVnetToSharedVnetPeering './modules/vnet-peering.bicep'={
+  scope:resourceGroup(resourceVnetRgName)
   name: 'spoke-to-hub-peering'
   params:{
-    parentVnetName: spokeVnetName
-    remoteVnetId: hubVnetId
+    parentVnetName: resourceVnetName
+    remoteVnetId: sharedVnetId
   }
 }

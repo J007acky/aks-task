@@ -1,11 +1,11 @@
+var vnetConfig = loadYamlContent('../../../config/vnet-config.yaml')
+var namingConfig = loadYamlContent('../../../config/main-config.yml')
 
-var vnetConfig = loadYamlContent('./config-files/vnet-config.yaml')
-var namingConfig = loadYamlContent('./config-files/naming-config.yml')
-
-
-var publicIpName  = '${namingConfig.subscriptionId}-${namingConfig.sharedVnetRegion}-${namingConfig.environment}-bastion-public-ip'
-var bastionHostName  = '${namingConfig.subscriptionId}-${namingConfig.sharedVnetRegion}-${namingConfig.environment}-bastion-host'
+@description('complete subnet id for bastion host in shared vnet')
 param bastionSubnetId string
+
+var publicIpName  = '${namingConfig.SUBSCRIPTION_NAME}-${namingConfig.SHARED_REGION}-${namingConfig.ENVIRONMENT}-bastion-public-ip'
+var bastionHostName  = '${namingConfig.SUBSCRIPTION_NAME}-${namingConfig.SHARED_REGION}-${namingConfig.ENVIRONMENT}-bastion-host'
 
 resource publicIpAddressForBastion 'Microsoft.Network/publicIPAddresses@2022-01-01' = {
   name: publicIpName

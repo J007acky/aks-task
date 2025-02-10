@@ -1,8 +1,7 @@
-var namingConfig = loadYamlContent('./config-files/naming-config.yml')
-var vnetConfig = loadYamlContent('./config-files/vnet-config.yaml')
+var namingConfig = loadYamlContent('../../../config/main-config.yml')
+var vnetConfig = loadYamlContent('../../../config/vnet-config.yaml')
 
-
-var virtualNetworkName = '${namingConfig.subscriptionId}-${namingConfig.resourceVnetRegion}-${namingConfig.environment}-resource-vnet'
+var virtualNetworkName = '${namingConfig.SUBSCRIPTION_NAME}-${namingConfig.RESOURCES_REGION}-${namingConfig.ENVIRONMENT}-resource-vnet'
 var addressSpace = vnetConfig.resourceVnetCidr
 
 var publicSubnetName = '${virtualNetworkName}-public-subnet'
@@ -10,6 +9,7 @@ var publicSubnetPrefix = vnetConfig.publicSubnetResourceVnetPrefix
 
 var privateSubnetName = '${virtualNetworkName}-private-subnet'
 var privateSubnetPrefix = vnetConfig.privateSubnetResourceVnetPrefix
+
 var location = vnetConfig.resourceVnetResourceRegion
 
 resource resourceVnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
@@ -80,7 +80,6 @@ resource publicSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
     privateSubnet
   ]
 }
-
 
 output resourceVnetId string = resourceVnet.id
 output resourceVnetName string = virtualNetworkName

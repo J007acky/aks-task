@@ -1,9 +1,22 @@
+@description('Location of the VNG - same as the location of parent vnet')
 param locationForVNG string
+
+@description('Name of your virtual network gateway')
 param virtualNetworkGatewayName string
+
+@description('Name of the LNG to represent this vnet')
 param localNetworkGatewayName string
+
+@description('Name for public ip which is associated to VNG')
 param publicIpName string
+
+@description('Name of your parent ')
 param parentVnetName string
+
+@description('Location for LNG - will be same as the location of another vnet')
 param locationForLNG string
+
+@description('CIDR of the parent Vnet')
 param parentVnetCidr string
 
 resource publicIpForVirtualNetworkGateway 'Microsoft.Network/publicIPAddresses@2022-01-01' = {
@@ -45,7 +58,6 @@ resource virtualNetworkGatewayResource 'Microsoft.Network/virtualNetworkGateways
   }
 }
 
-
 resource localNetworkGatewayResource 'Microsoft.Network/localNetworkGateways@2024-05-01' = {
   location: locationForLNG
   name: localNetworkGatewayName
@@ -58,7 +70,6 @@ resource localNetworkGatewayResource 'Microsoft.Network/localNetworkGateways@202
     }
   }
 }
-
 
 output vnetVngId string = virtualNetworkGatewayResource.id
 output vnetLngId string = localNetworkGatewayResource.id

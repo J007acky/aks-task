@@ -1,8 +1,17 @@
+@secure()
+@description('The shared key for LNG and VNG connection')
 param sharedKey string
 
+@description('Location of your VNG and LNG - ensure that both should be in same vnet')
 param locationForConnection string
+
+@description('Name of connection between vng and lng')
 param connectionName string
+
+@description('ID of LNG - will represent other vnet')
 param localNetworkGatewayId string
+
+@description('ID of VNG - vpn gateway of the main vnet')
 param virtualNetworkGatewayID string
 
 resource s2sConnectionBetweenLngAndVng 'Microsoft.Network/connections@2024-05-01' = {
@@ -26,6 +35,5 @@ resource s2sConnectionBetweenLngAndVng 'Microsoft.Network/connections@2024-05-01
       id: virtualNetworkGatewayID
       properties:{}
     }
-
   }
 }

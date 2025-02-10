@@ -15,16 +15,11 @@ pipeline {
         }
         stage('set deployment names in environment variables'){
             steps{
-                dir('resources/bicep-templates/vnet/config-files'){
+                dir('config'){
                     script{
-
                         def config;
-                        def environment = readYaml file: 'naming-config.yml'
-
-                        switch(environment.environment) {
-                            case 'dev': 
-                                config = readYaml file: 'dev-deployment-name.yml';
-                                break;
+                        def environment = readYaml file: 'main-config.yml'
+                        switch(environment.ENVIRONMENT) {
                             case 'qa': 
                                 config = readYaml file: 'qa-deployment-name.yml';
                                 break;
@@ -35,7 +30,6 @@ pipeline {
                                 config = readYaml file: 'dev-deployment-name.yml'
                                 break;
                         }
-                        println(config)
                         env.SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION = config.SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION
                         env.RG_DEPLOYMENT_NAME=config.RG_DEPLOYMENT_NAME
                         env.SHARED_VNET_CONFIGURATION_DEPLOYMENT_NAME=config.SHARED_VNET_CONFIGURATION_DEPLOYMENT_NAME
@@ -46,7 +40,7 @@ pipeline {
                 }
             }
         }
-        stage('installation'){
+        stage('update the packages and install az-cli in docker agent'){
             steps{
                 script{
                     sh '''
