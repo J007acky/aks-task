@@ -1,9 +1,8 @@
 pipeline {
     agent any 
     parameters{
-        string(name: 'VM_IP', description: 'Public IP adress of the VM to SSH', defaultValue: '172.172.187.240')
-        string(name: 'PUBLIC_IP_NAME', description: 'Name of the public IP for public ingress', defaultValue: '3ef62b1d-9b6b-4295-a34b-207a4c3f78a5')
-    }
+        string(name: 'VM_IP', description: 'Public IP adress of the VM to SSH', defaultValue: '172.191.238.193')
+        }
 
     stages {
         stage('SSH into VM and deploy resources') {
@@ -40,11 +39,11 @@ pipeline {
                         az extension update --name aks-preview ;
                         az aks approuting enable --resource-group ${prefix}-aks-rg --name ${prefix}-aks --nginx None ;
                         rm -rf aks-task ;
-                        git clone ${config.GIT_REPO_URL} aks-task ;
+                        git clone https://github.com/J007acky/aks-task.git aks-task ;
                         cd aks-task/resources/k8s-resources ;
                         kubectl create namespace public-resources ;
                         kubectl create namespace private-resources ;
-                        export IP=${PUBLIC_IP_NAME} ;
+                        export IP=${prefix}-aks-ip ;
                         export RG=MC_${prefix}-aks-rg_${prefix}-aks_${config.RESOURCES_REGION} ;
                         envsubst < nginx-public-controller.yaml | kubectl apply -f - ;
                         kubectl apply -f nginx-internal-controller.yaml -f private-ingress-resource.yaml -f public-ingress-resource.yaml -f resources-private.yaml -f resources-public.yaml ;
