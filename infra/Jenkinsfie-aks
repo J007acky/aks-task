@@ -81,7 +81,14 @@ pipeline {
                          --parameters sshRSAPublicKey='${SSH_KEY}'
                          --name '${AZURE_ENVIRONMENT}-aks-deployment'
                     """
+
                     }
+                    // Add a VPC link in the private DNS zone
+                        sh """
+                        az network private-dns zone list \
+                        -g MC_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks_${AZURE_LOCATION} \
+                        | grep "name" | cut -d '"' -f 4
+                    """
                 }
             }
         }
