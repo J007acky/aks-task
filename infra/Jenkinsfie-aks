@@ -78,7 +78,7 @@ pipeline {
                         az deployment group create\
                          --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg' \
                          --parameters './resources/bicep-templates/aks/aks-cluster/aks-cluster.bicepparam'\
-                         --parameters sshRSAPublicKey='${SSH_KEY}'
+                         --parameters sshRSAPublicKey='${SSH_KEY}'\
                          --name '${AZURE_ENVIRONMENT}-aks-deployment'
                     """
 
