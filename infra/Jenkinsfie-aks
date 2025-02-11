@@ -1,0 +1,124 @@
+pipeline {
+    agent any
+    stages {
+        stage('Login to Azure') {
+            steps {
+                script {
+                    withCredentials([azureServicePrincipal(credentialsId:'AZ_CLI', subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID', clientIdVariable: 'AZURE_CLIENT_ID', clientSecretVariable: 'AZURE_CLIENT_SECRET', tenantIdVariable: 'AZURE_TENANT_ID')]) {
+                        sh '''
+                            az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                        '''
+                    }
+                }
+            }
+        }
+        stage('set Environment variables') {
+            steps {
+                script {
+                    def config = readYaml file: './config/main-config.yml'
+                    env.AZURE_SUBSCRIPTION_ID = config.SUBSCRIPTION_NAME
+                    env.AZURE_LOCATION = config.RESOURCES_REGION
+                    env.AZURE_LOCATION_SHARED = config.SHARED_REGION
+                    env.AZURE_ENVIRONMENT = config.ENVIRONMENT
+                }
+            }
+        }
+        stage('Deploy Resource Groups') {
+            steps {
+                script {
+                    sh """
+                        az deployment sub create --location '${AZURE_LOCATION}' \
+                        --parameters './resources/bicep-templates/aks/resource-group.bicepparam' \
+                        --name '${AZURE_ENVIRONMENT}-aks-rg-deployment'
+                    """
+                }
+            }
+        }
+        stage('Deploy Virtual Machine') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'SSH_KEY_NODE', variable: 'SSH_KEY'),usernamePassword(credentialsId: 'VM_LOGIN_PROFILE', passwordVariable: 'VM_USR_PWD', usernameVariable: 'VM_USR_NAME')]) {
+                        sh """
+                        az deployment group create \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION_SHARED}-${AZURE_ENVIRONMENT}-shared-rg' \
+                        --parameters './resources/bicep-templates/aks/virtual-machine/test-vm.bicepparam' \
+                        --parameters vmUsername='${VM_USR_NAME}' \
+                        vmPassword='${VM_USR_PWD}' \
+                        sshKeyVM='${SSH_KEY}' \
+                        --name '${AZURE_ENVIRONMENT}-vm-deployment'
+                    """
+                    }
+                }
+            }
+        }
+        stage('Deploy Managed Identity') {
+            steps {
+                script {
+                    sh """
+                        az deployment group create \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg' \
+                        --parameters './resources/bicep-templates/aks/managed-identity/managed-identity.bicepparam' \
+                        --name '${AZURE_ENVIRONMENT}-identity-deployment'
+                    """
+                    sh """
+                        az deployment group create \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-resource-rg' \
+                        --parameters './resources/bicep-templates/aks/managed-identity/role-assignment.bicepparam' \
+                        --name '${AZURE_ENVIRONMENT}-role-assignment-deployment'
+                        """
+                }
+            }
+        }
+
+        stage('Deploy AKS cluster') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'SSH_KEY_NODE', variable: 'SSH_KEY')]) {
+                        sh """
+                        az deployment group create\
+                         --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg' \
+                         --parameters './resources/bicep-templates/aks/aks-cluster/aks-cluster.bicepparam'\
+                         --parameters sshRSAPublicKey='${SSH_KEY}'\
+                         --name '${AZURE_ENVIRONMENT}-aks-deployment'
+                    """
+
+                    }
+                    env.MC_RG = "MC_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks_${AZURE_LOCATION}"
+                    // Add a VPC link in the private DNS zone
+                    env.DNS_NAME = (script:"""
+                        az network private-dns zone list \
+                        -g MC_${MC_RG} \
+                        | grep "name" | cut -d '"' -f 4
+                    """, returnsStdout: true).trim()
+
+                    env.SHARED_VNET_ID= sh (script:"""
+                        az deployment group show --name ${AZURE_ENVIRONMENT}-shared-vnet-configuration \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION_SHARED}-${AZURE_ENVIRONMENT}-shared-rg' \
+                        --query properties.outputs.sharedVnetId.value --output tsv
+                        """,returnStdout:true)
+
+                    sh """
+                        az network private-dns link vnet create \
+                        --resource-group ${MC_RG} \
+                        --zone-name '${DNS_NAME}' \
+                        --name '${AZURE_ENVIRONMENT}-vnet-link' \
+                        --virtual-network '${SHARED_VNET_ID}' --registration-enabled true
+                    """
+                }
+            }
+        }
+        stage('cleanup') {
+            steps {
+                cleanWs()
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sh 'az logout'
+            }
+        }
+    }
+}
