@@ -83,11 +83,26 @@ pipeline {
                     """
 
                     }
+                    env.MC_RG = "MC_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks_${AZURE_LOCATION}"
                     // Add a VPC link in the private DNS zone
-                        sh """
+                    env.DNS_NAME = (script:"""
                         az network private-dns zone list \
-                        -g MC_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks-rg_${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION}-${AZURE_ENVIRONMENT}-aks_${AZURE_LOCATION} \
+                        -g MC_${MC_RG} \
                         | grep "name" | cut -d '"' -f 4
+                    """, returnsStdout: true).trim()
+
+                    env.SHARED_VNET_ID= sh (script:"""
+                        az deployment group show --name ${AZURE_ENVIRONMENT}-shared-vnet-configuration \
+                        --resource-group '${AZURE_SUBSCRIPTION_ID}-${AZURE_LOCATION_SHARED}-${AZURE_ENVIRONMENT}-shared-rg' \
+                        --query properties.outputs.sharedVnetId.value --output tsv
+                        """,returnStdout:true)
+
+                    sh """
+                        az network private-dns link vnet create \
+                        --resource-group ${MC_RG} \
+                        --zone-name '${DNS_NAME}' \
+                        --name '${AZURE_ENVIRONMENT}-vnet-link' \
+                        --virtual-network '${SHARED_VNET_ID}' --registration-enabled true
                     """
                 }
             }
