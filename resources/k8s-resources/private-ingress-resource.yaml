@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: private-ingress
+  namespace: private-resources
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx-internal
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: private-jenkins
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+          - backend:
+              service:
+                name: private-nginx
+                port:
+                  number: 80
+            path: /nginx
+            pathType: Prefix
