@@ -16,6 +16,10 @@ resource publicIpAddressForBastion 'Microsoft.Network/publicIPAddresses@2022-01-
   properties: {
     publicIPAllocationMethod: 'Static'
   }
+  tags:{
+    project: 'aks-task'
+    environment: namingConfig.ENVIRONMENT
+  }
 }
 
 resource bastionHost 'Microsoft.Network/bastionHosts@2022-01-01' = {
@@ -40,6 +44,10 @@ resource bastionHost 'Microsoft.Network/bastionHosts@2022-01-01' = {
   }
   sku:{
     name:'Standard'
+  }
+  tags:{
+    project: 'aks-task'
+    environment: namingConfig.ENVIRONMENT
   }
 }
 

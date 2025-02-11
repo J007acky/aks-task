@@ -14,6 +14,9 @@ param localNetworkGatewayId string
 @description('ID of VNG - vpn gateway of the main vnet')
 param virtualNetworkGatewayID string
 
+@description('Current Environment of the connection')
+param environment string
+
 resource s2sConnectionBetweenLngAndVng 'Microsoft.Network/connections@2024-05-01' = {
   location: locationForConnection
   name: connectionName
@@ -35,5 +38,9 @@ resource s2sConnectionBetweenLngAndVng 'Microsoft.Network/connections@2024-05-01
       id: virtualNetworkGatewayID
       properties:{}
     }
+  }
+  tags:{
+    project: 'aks-task'
+    environment: environment
   }
 }

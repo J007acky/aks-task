@@ -24,6 +24,10 @@ resource sharedVnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
       ]
     }
   }
+  tags:{
+    project: 'aks-task'
+    environment: namingConfig.ENVIRONMENT
+  }
 }
 
 resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
@@ -43,6 +47,10 @@ resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
   dependsOn:[
     sharedVnet
   ]
+  tags:{
+    project: 'aks-task'
+    environment: namingConfig.ENVIRONMENT
+  }
 }
 
 resource bastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {

@@ -8,11 +8,19 @@ var resourceVnetRgName = '${rgconfig.SUBSCRIPTION_NAME}-${rgconfig.RESOURCES_REG
 resource sharedVnetRg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: sharedVnetRgName
   location: rgconfig.SHARED_REGION
+  tags:{
+    project: 'aks-task'
+    environment: rgconfig.ENVIRONMENT
+  }
 }
 
 resource resourceVnetRg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceVnetRgName
   location: rgconfig.RESOURCES_REGION
+  tags:{
+    project: 'aks-task'
+    environment: rgconfig.ENVIRONMENT
+  }
 }
 
 output sharedVnetRgName string = sharedVnetRg.name

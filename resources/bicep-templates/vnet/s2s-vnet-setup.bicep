@@ -36,6 +36,7 @@ module sharedVnetS2SResourceSetup './modules/site-to-site-ipsec-gateway-configur
       parentVnetName: sharedVnetName
       parentVnetCidr: vnetConfig.sharedVnetCidr
       publicIpName: sharedVnetVngPublicIpName
+      environment: namingConfig.ENVIRONMENT
     }
 }
 
@@ -50,6 +51,7 @@ module resourceVnetS2SResourceSetup './modules/site-to-site-ipsec-gateway-config
     parentVnetName: resourceVnetName
     parentVnetCidr: vnetConfig.resourceVnetCidr
     publicIpName: resourceVnetVngPublicIpName
+    environment: namingConfig.ENVIRONMENT
   }
   dependsOn:[
     sharedVnetS2SResourceSetup
@@ -65,6 +67,7 @@ module sharedVnetVngToResourceVnetLng './modules/connection-between-lng-and-vng.
     localNetworkGatewayId: resourceVnetS2SResourceSetup.outputs.vnetLngId
     locationForConnection: vnetConfig.sharedVnetResourceRegion
     connectionName: '${namingConfig.ENVIRONMENT}-connection-shared-vnet-vng-and-resource-vnet-lng'
+    environment: namingConfig.ENVIRONMENT
   }
 }
 
@@ -77,6 +80,7 @@ module resourceVnetVngToSharedVnetLng './modules/connection-between-lng-and-vng.
     localNetworkGatewayId: sharedVnetS2SResourceSetup.outputs.vnetLngId
     locationForConnection: vnetConfig.resourceVnetResourceRegion
     connectionName: '${namingConfig.ENVIRONMENT}-connection-resource-vnet-vng-and-shared-vnet-lng'
+    environment: namingConfig.ENVIRONMENT
   }
   dependsOn:[
     sharedVnetVngToResourceVnetLng

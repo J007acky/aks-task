@@ -19,6 +19,9 @@ param locationForLNG string
 @description('CIDR of the parent Vnet')
 param parentVnetCidr string
 
+@description('Current Working Environment')
+param environment string
+
 resource publicIpForVirtualNetworkGateway 'Microsoft.Network/publicIPAddresses@2022-01-01' = {
   name: publicIpName
   location: locationForVNG
@@ -28,7 +31,10 @@ resource publicIpForVirtualNetworkGateway 'Microsoft.Network/publicIPAddresses@2
   properties: {
     publicIPAllocationMethod: 'Static'
   }
-
+  tags: {
+    project: 'aks-task'
+    environment: environment
+  }
 }
 
 resource virtualNetworkGatewayResource 'Microsoft.Network/virtualNetworkGateways@2024-05-01' = {
@@ -44,7 +50,7 @@ resource virtualNetworkGatewayResource 'Microsoft.Network/virtualNetworkGateways
             id: publicIpForVirtualNetworkGateway.id
           }
           subnet: {
-            id: resourceId('Microsoft.Network/virtualNetworks/subnets',parentVnetName,'GatewaySubnet')
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', parentVnetName, 'GatewaySubnet')
           }
         }
       }
@@ -55,6 +61,10 @@ resource virtualNetworkGatewayResource 'Microsoft.Network/virtualNetworkGateways
     }
     vpnGatewayGeneration: 'Generation2'
     vpnType: 'RouteBased'
+  }
+  tags:{
+    project: 'aks-task'
+    environment: environment
   }
 }
 
@@ -68,6 +78,10 @@ resource localNetworkGatewayResource 'Microsoft.Network/localNetworkGateways@202
         parentVnetCidr
       ]
     }
+  }
+  tags:{
+    project: 'aks-task'
+    environment: environment
   }
 }
 

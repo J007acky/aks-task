@@ -22,6 +22,10 @@ resource resourceVnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
       ]
     }
   }
+  tags:{
+    project: 'aks-task'
+    environment: namingConfig.ENVIRONMENT
+  }
 }
 
 resource gatewaySubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
@@ -50,6 +54,10 @@ resource gatewayRouteTable 'Microsoft.Network/routeTables@2024-05-01' = {
   dependsOn:[
     resourceVnet
   ]
+  tags:{
+    project: 'aks-task'
+    environment: namingConfig.ENVIRONMENT
+  }
 }
 
 resource privateSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
