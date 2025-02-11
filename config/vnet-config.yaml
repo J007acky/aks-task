@@ -1,0 +1,12 @@
+sharedVnetResourceRegion: "East US"
+resourceVnetResourceRegion: "West US"
+sharedVnetCidr: "10.0.0.0/16"
+resourceVnetCidr: "10.1.0.0/16"
+bastionSubnetSharedVnetPrefix: "10.0.1.0/24"
+publicSubnetSharedVnetPrefix: "10.0.2.0/24" 
+privateSubnetSharedVnetPrefix: "10.0.3.0/24"
+gatewaySubnetSharedVnetPrefix: "10.0.4.0/24"
+
+publicSubnetResourceVnetPrefix: "10.1.1.0/24"
+privateSubnetResourceVnetPrefix: "10.1.2.0/24"
+gatewaySubnetResourceVnetPrefix: "10.1.3.0/24"

@@ -1,0 +1,6 @@
+SUBSCRIPTION_SCOPE_DEPLOYMENT_LOCATION: 'eastus'
+RG_DEPLOYMENT_NAME: 'prod-resource-group-deployment'
+SHARED_VNET_CONFIGURATION_DEPLOYMENT_NAME: 'prod-shared-vnet-configuration'
+SHARED_VNET_RESOURCE_DEPLOYMENT_NAME: 'prod-shared-vnet-deployment'
+RESOURCE_VNET_CONFIGURATION_AND_RESOURCE_DEPLOYMENT_NAME: 'prod-resource-vnet-deployment'
+SITE_TO_SITE_RESOURCE_DEPLOYMENT_NAME: 'prod-s2s-resource-deployment-and-connection-creation'
