@@ -3,6 +3,9 @@ using 'aks-cluster.bicep'
 var configFile = loadYamlContent('../../../../config/main-config.yml')
 var aksConfigFile = loadYamlContent('../../../../config/aks-config.yml')
 
+// Environment of the resources to be deployed in
+param environment = configFile.ENVIRONMENT
+
 // Location where the AKS cluster will be created
 param aksLocation = configFile.RESOURCES_REGION
 

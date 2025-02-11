@@ -7,3 +7,5 @@ param aksManagedIdentityName = '${configFile.SUBSCRIPTION_NAME}-${configFile.RES
 param kubeletManagedIdentityName = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-${configFile.ENVIRONMENT}-identity-kubelet-managed-identity'
 
 param location = configFile.RESOURCES_REGION
+
+param environment = configFile.ENVIRONMENT

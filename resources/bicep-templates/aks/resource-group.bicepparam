@@ -7,3 +7,6 @@ param rgName = '${configFile.SUBSCRIPTION_NAME}-${configFile.RESOURCES_REGION}-$
 
 // Location for the resource group
 param rgLocation = configFile.RESOURCES_REGION
+
+// Environment of the resources to be deployed in
+param environment = configFile.ENVIRONMENT

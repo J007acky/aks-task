@@ -1,6 +1,8 @@
 @description('Resource group name prefix')
 param rgNamePrefix string
 
+@description('Environment of the resources to be deployed in.')
+param environment string
 
 @description('The location of the AKS Cluster resource.')
 param aksLocation string
@@ -103,6 +105,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-07-01' = {
     }
     
     dnsPrefix: dnsPrefix
+  }
+  tags: {
+    environment: environment
+    project: 'aks-task'
   }
 }
 

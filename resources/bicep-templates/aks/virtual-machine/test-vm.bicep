@@ -19,6 +19,9 @@ var ipName = '${vmName}-IP'
 @description('Subnet ID where the Virtual Machine will be deployed')
 var subnetId = resourceId('${rgNamePrefix}-shared-rg', 'Microsoft.Network/virtualNetworks/subnets', '${rgNamePrefix}-shared-vnet', '${rgNamePrefix}-shared-vnet-public-subnet')
 
+@description('Environment of the resources to be deployed in.')
+param environment string
+
 @description('Username for accessing VM')
 @secure()
 param vmUsername string
@@ -57,6 +60,10 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2019-11-0
       }
     ]
   }
+  tags: {
+        environment: environment
+        project: 'aks-task'
+  }
 }
 
 
@@ -73,6 +80,10 @@ resource publicIP 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
   dependsOn: [
     networkSecurityGroup
   ]
+  tags: {
+        environment: environment
+        project: 'aks-task'
+  }
 }
 
 resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
@@ -97,10 +108,10 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
       id: networkSecurityGroup.id
     }
   }
-  // dependsOn: [
-  //   publicIP
-  //   networkSecurityGroup
-  // ]
+  tags: {
+        environment: environment
+        project: 'aks-task'
+  }
 }
 
 resource ubuntuVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
@@ -152,7 +163,8 @@ resource ubuntuVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
       ]
     }
   }
-  // dependsOn:[
-  //   networkInterface
-  // ]
+  tags: {
+        environment: environment
+        project: 'aks-task'
+  }
 }
